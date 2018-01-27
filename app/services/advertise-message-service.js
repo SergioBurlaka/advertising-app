@@ -2,6 +2,8 @@
 let db   = require('../model/model-settings.js');
 const logService = require('../services/log-service.js');
 const warningMessageService = require('../services/message-warning-service.js');
+let mongoose = require('mongoose');
+
 
 // addNoMessageToShow: addNoMessageToShow,
 // getNoMessageToShow: getNoMessageToShow
@@ -99,6 +101,8 @@ function twoTimesPerTenMinutesFilter(logsAboutThisMessage) {
 
         let futureDate = new Date(Date.parse(new Date())+600000);
         let messageId = logsAboutThisMessage[0].MessageID;
+        // console.log('messageId');
+        // console.log(messageId);
         let userId = logsAboutThisMessage[0].userID;
 
             addWillShowMessage (messageId, futureDate, userId)
@@ -144,12 +148,15 @@ function getWillShowMessage() {
 }
 
 
+
+
+
 function subtractArrSecondFromFirst(firstArr, secondArr) {
 
     let majorArr = firstArr.slice();
 
     for(let i = 0; i < secondArr.length; i++){
-        majorArr = majorArr.filter( item => ''+item._id !==  secondArr[i].MesId );
+        majorArr = majorArr.filter( item => String(item._id) !==  String(secondArr[i].MesId) );
     }
 
     return majorArr
@@ -162,7 +169,7 @@ function getIdArrayOfMessages(arrOfMessages) {
     let idArray = [];
 
     for(let i=0; i < arrOfMessages.length; i++){
-        idArray.push(arrOfMessages[i]._id)
+        idArray.push(mongoose.Types.ObjectId(arrOfMessages[i]._id))
     }
     return idArray
 }
@@ -224,20 +231,12 @@ function getRandomAdvertise(req) {
             console.log('messagesId ');
             console.log(messagesId);
 
-            // return Promise.all([
-            //     db.advertisingMessage.find({_id: { $all:  messagesId }}),
-            //     logService.getLogsWithField({MessageID: { $all:  messagesId } })
-            // ])
-
-
-
+        // db.advertisingMessage.find({ _id:{ $in:  messagesId }}),
             return Promise.all([
-                db.advertisingMessage.find({}),
-                logService.getLogsWithField({MessageID: { $all:  messagesId } })
+                messagesToShow,
+                db.log.find({MessageID:{ $in:  messagesId } }),
+
             ])
-
-        // logService.getLogsWithField({})
-
 
 
         }
@@ -246,17 +245,21 @@ function getRandomAdvertise(req) {
 
                 let allMessages = result[0];
                 let allLogsForThisUser = result[1];
+                // let allMessagesFromObject  = result[2];
+
 
 
                 if(allMessages[0].message === 'no message to show' ){
                     return allMessages[0]
                 }
 
-                console.log('allMessages length '+ allMessages.length);
-                console.log('allMessages '+ getIdArrayOfAnything(allMessages, "_id"));
+                // console.log('allMessagesFromObject  '+ allMessagesFromObject);
 
-                console.log('allLogsForThisUser length '+ allLogsForThisUser.length);
-                console.log('allMessages '+ getIdArrayOfAnything(allLogsForThisUser, "MessageID"));
+                // console.log('allMessages length '+ allMessages.length);
+                // console.log('allMessages '+ getIdArrayOfAnything(allMessages, "_id"));
+                //
+                // console.log('allLogsForThisUser length '+ allLogsForThisUser.length);
+                // console.log('allLogsForThisUser '+ getIdArrayOfAnything(allLogsForThisUser, "MessageID"));
 
 
 
@@ -268,15 +271,15 @@ function getRandomAdvertise(req) {
                     newAdvertise = generateRandomMessage(allMessages);
 
 
-                         let logsAboutThisMessage = allLogsForThisUser.filter(
-                             log => log.MessageID === newAdvertise._id+''
-                         );
+                    let logsAboutThisMessage = allLogsForThisUser.filter(
+                        log => String(log.MessageID) === String(newAdvertise._id)
+
+                    );
 
 
-
-                         if(logsAboutThisMessage.length === 0){
-                             return newAdvertise
-                         }
+                    if(logsAboutThisMessage.length === 0){
+                        return newAdvertise
+                    }
 
                     let stopGenerator = twoTimesPerTenMinutesFilter(logsAboutThisMessage);
 

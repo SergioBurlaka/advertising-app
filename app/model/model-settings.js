@@ -24,22 +24,25 @@ advertisingSchema.method('filter', function (greeting) {
 
 let advertisingMessage = mongoose.model('advertisingMessage', advertisingSchema);
 
+let Schema = mongoose.Schema,
+    ObjectId = Schema.ObjectId;
+
 
 let logSchema = mongoose.Schema({
     userID: String,
-    MessageID: String,
+    MessageID: ObjectId,
     browser: String,
     IP: String,
     country: String,
     date: Date
 });
 
+
 let log = mongoose.model('log', logSchema);
 
 
-
 let willShowMessagesSchema = mongoose.Schema({
-    MesId: String,
+    MesId:  ObjectId,
     date: Date,
     useId: String
 
