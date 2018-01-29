@@ -27,12 +27,9 @@ module.exports = {
 
      let userID = req.params.userId;
      let browser = req.headers['user-agent'];
-     let IP = req.connection.remoteAddress;
-     let country = 'country';
+     let IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
      let date = new Date();
-
-     let now = new Date;
-
+     let country = req.geoip.attributes.country ||'country';
 
      advertiseService.getRandomAdvertise(req)
          .then(resp => {

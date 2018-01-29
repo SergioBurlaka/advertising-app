@@ -81,33 +81,17 @@ function twoTimesPerTenMinutesFilter(logsAboutThisMessage) {
         }
 
         if(counter === 2){
-            // addWillShowMessage (newAdvertise._id, new Date(), req.params.userId )
-            //     .then(() =>  false);
-
-            // new Date(Date.parse(now)+600000);
-
             return false
-
         }
 
     }
 
-
-
-
-
-    if(counter === 1 ){
-
-
-        let futureDate = new Date(Date.parse(new Date())+600000);
+    if (counter === 1) {
+        let futureDate = new Date(Date.parse(new Date()) + 600000);
         let messageId = logsAboutThisMessage[0].MessageID;
-        // console.log('messageId');
-        // console.log(messageId);
         let userId = logsAboutThisMessage[0].userID;
-
-            addWillShowMessage (messageId, futureDate, userId)
-            .then(() =>  false);
-
+        addWillShowMessage(messageId, futureDate, userId)
+            .then(() => false);
     }
 
     if(counter < 2){
@@ -184,117 +168,245 @@ function getIdArrayOfAnything(arrOfMessages, field) {
 }
 
 
+function filterByCountry(userCountry) {
+
+    return userCountry === 'Ukraine'
+}
+
+function TwoTimesFilter(allLogsForThisUser, newAdvertise) {
+
+
+    let logsAboutThisMessage = allLogsForThisUser.filter(
+        log => String(log.MessageID) === String(newAdvertise._id)
+    );
+
+
+    if (logsAboutThisMessage.length === 0) {
+        return true
+    }
+
+    return twoTimesPerTenMinutesFilter(logsAboutThisMessage);
+}
+
+
+function initIteratedArr(arrOfAdvertise) {
+    let advertiseThatWasIterated = [];
+    for(let i=0; i < arrOfAdvertise.length; i++){
+        advertiseThatWasIterated.push(
+            {
+                advertiseId: arrOfAdvertise[i]._id,
+                count: 0
+            }
+        )
+    }
+    return advertiseThatWasIterated
+}
+
+function increaseCountForIteratedMessage(countOfIteratedMessages, currentMesage) {
+    for(let i =0; i < countOfIteratedMessages.length; i++){
+        if(countOfIteratedMessages[i].advertiseId+'' === currentMesage._id+'' ){
+            countOfIteratedMessages[i].count++
+        }
+    }
+
+}
+
+function wereTheMessagesAllShown(countOfIteratedMessages) {
+    for(let i=0; i < countOfIteratedMessages.length; i++){
+        if(countOfIteratedMessages[i].count <= 0){
+            return false
+        }
+    }
+    return true
+}
+
 
 
 function getRandomAdvertise(req) {
 
-    return Promise.all([
-        db.willShowMessages.find({
-            $and: [
-                {date: {$gt: new Date()}},
-                {useId: req.params.userId}
-            ]
-        }),
-        db.advertisingMessage.find({})
+    // console.log('req.geoip');
+    // console.log(req.geoip);
 
-    ]).then(result => {
+  return Promise.all([
+         db.advertisingMessage.find({}),
+         db.log.find({}),
+         db.willShowMessages.find({
+                  $and: [
+                      {date: {$gt: new Date()}},
+                      {useId: req.params.userId}
+                  ]
+              })
 
-            let messagesWillShow = result[0];
-            let allMessages = result[1];
-
-
-            if (messagesWillShow.length === 0) {
-                console.log(' messagesWillShow.length === 0');
-
-                return Promise.all([
-                    db.advertisingMessage.find({}),
-                    logService.getLogsWithField({})
-                ])
-            }
+     ]).then( result =>{
+            let allMessages = result[0];
+            let allLogsForThisUser = result[1];
+            let messagesWillShow = result[2];
 
 
+            let generateMassage = true;
+            let newAdvertise;
 
-            if (messagesWillShow.length >= allMessages.length) {
-                console.log(' messagesWillShow.length >= allMessages.length');
-                return Promise.all([
-                    warningMessageService.getNoMessageToShow()
-                ])
-            }
+            let countOfIteratedMessages = initIteratedArr(allMessages);
 
 
 
-            let messagesToShow =  subtractArrSecondFromFirst(allMessages, messagesWillShow);
-            let messagesId = getIdArrayOfMessages(messagesToShow);
-
-
-            console.log('third way ');
-            console.log('messagesId ');
-            console.log(messagesId);
-
-        // db.advertisingMessage.find({ _id:{ $in:  messagesId }}),
-            return Promise.all([
-                messagesToShow,
-                db.log.find({MessageID:{ $in:  messagesId } }),
-
-            ])
-
-
-        }
-    ).then(
-            result =>{
-
-                let allMessages = result[0];
-                let allLogsForThisUser = result[1];
-                // let allMessagesFromObject  = result[2];
+            while (generateMassage){
 
 
 
-                if(allMessages[0].message === 'no message to show' ){
-                    return allMessages[0]
+                newAdvertise = generateRandomMessage(allMessages);
+
+                increaseCountForIteratedMessage(countOfIteratedMessages, newAdvertise);
+
+                let wasAllMessagesShown = wereTheMessagesAllShown(countOfIteratedMessages);
+
+
+
+                if(wasAllMessagesShown){
+
+                    return {
+                        message: " All messages was shown ",
+                    }
                 }
 
-                // console.log('allMessagesFromObject  '+ allMessagesFromObject);
 
-                // console.log('allMessages length '+ allMessages.length);
-                // console.log('allMessages '+ getIdArrayOfAnything(allMessages, "_id"));
-                //
-                // console.log('allLogsForThisUser length '+ allLogsForThisUser.length);
-                // console.log('allLogsForThisUser '+ getIdArrayOfAnything(allLogsForThisUser, "MessageID"));
+                let stopGenerator;
 
 
+                // if( newAdvertise._id+'' === "5a689f4c3d5c952a28fd7e2b" ){
+                //     stopGenerator = filterByCountry(req.geoip.attributes.country);
+                // }else{
+                //     return newAdvertise
+                // }
 
-                let generateMassage = true;
-                let newAdvertise;
+                let filterByCountryValue = filterByCountry(req.geoip.attributes.country);
 
-                while (generateMassage){
+                if (messagesWillShow.length >= allMessages.length) {
+                                return warningMessageService.getNoMessageToShow()
+                                    .then(result => result[0])
+                            }
 
-                    newAdvertise = generateRandomMessage(allMessages);
+                 let filterByPeriod = TwoTimesFilter(allLogsForThisUser, newAdvertise);
 
+                console.log('filterByCountryValue '+filterByCountryValue);
+                console.log('filterByPeriod '+filterByPeriod);
 
-                    let logsAboutThisMessage = allLogsForThisUser.filter(
-                        log => String(log.MessageID) === String(newAdvertise._id)
-
-                    );
-
-
-                    if(logsAboutThisMessage.length === 0){
-                        return newAdvertise
-                    }
-
-                    let stopGenerator = twoTimesPerTenMinutesFilter(logsAboutThisMessage);
-
-
-                    if(stopGenerator){
-                        return newAdvertise
-                    }
-
-
+                if(filterByCountryValue && filterByPeriod){
+                    return newAdvertise
                 }
+
 
             }
 
-    )
 
+
+        })
+
+
+
+
+    // return Promise.all([
+    //     db.willShowMessages.find({
+    //         $and: [
+    //             {date: {$gt: new Date()}},
+    //             {useId: req.params.userId}
+    //         ]
+    //     }),
+    //     db.advertisingMessage.find({})
+    //
+    // ]).then(result => {
+    //
+    //         let messagesWillShow = result[0];
+    //         let allMessages = result[1];
+    //
+    //
+    //         if (messagesWillShow.length === 0) {
+    //             console.log(' messagesWillShow.length === 0');
+    //
+    //             return Promise.all([
+    //                 db.advertisingMessage.find({}),
+    //                 logService.getLogsWithField({})
+    //             ])
+    //         }
+    //
+    //
+    //
+    //         if (messagesWillShow.length >= allMessages.length) {
+    //             console.log(' messagesWillShow.length >= allMessages.length');
+    //             return Promise.all([
+    //                 warningMessageService.getNoMessageToShow()
+    //             ])
+    //         }
+    //
+    //
+    //         let messagesToShow =  subtractArrSecondFromFirst(allMessages, messagesWillShow);
+    //         let messagesId = getIdArrayOfMessages(messagesToShow);
+    //
+    //
+    //         console.log('third way ');
+    //         console.log('messagesId ');
+    //         console.log(messagesId);
+    //
+    //     // db.advertisingMessage.find({ _id:{ $in:  messagesId }}),
+    //         return Promise.all([
+    //             messagesToShow,
+    //             db.log.find({MessageID:{ $in:  messagesId } }),
+    //         ])
+    //     }
+    // ).then(
+    //         result =>{
+    //
+    //             let allMessages = result[0];
+    //             let allLogsForThisUser = result[1];
+    //             // let allMessagesFromObject  = result[2];
+    //
+    //
+    //
+    //             if(allMessages[0].message === 'no message to show' ){
+    //                 return allMessages[0]
+    //             }
+    //
+    //             // console.log('allMessagesFromObject  '+ allMessagesFromObject);
+    //
+    //             // console.log('allMessages length '+ allMessages.length);
+    //             // console.log('allMessages '+ getIdArrayOfAnything(allMessages, "_id"));
+    //             //
+    //             // console.log('allLogsForThisUser length '+ allLogsForThisUser.length);
+    //             // console.log('allLogsForThisUser '+ getIdArrayOfAnything(allLogsForThisUser, "MessageID"));
+    //
+    //
+    //
+    //             let generateMassage = true;
+    //             let newAdvertise;
+    //
+    //             while (generateMassage){
+    //
+    //                 newAdvertise = generateRandomMessage(allMessages);
+    //
+    //
+    //                 let logsAboutThisMessage = allLogsForThisUser.filter(
+    //                     log => String(log.MessageID) === String(newAdvertise._id)
+    //                 );
+    //
+    //
+    //                 if(logsAboutThisMessage.length === 0){
+    //                     return newAdvertise
+    //                 }
+    //
+    //                 let stopGenerator = twoTimesPerTenMinutesFilter(logsAboutThisMessage);
+    //
+    //
+    //                 if(stopGenerator){
+    //                     return newAdvertise
+    //                 }
+    //
+    //
+    //             }
+    //
+    //         }
+    //
+    // )
+    //
 
 
 }

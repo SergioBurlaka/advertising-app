@@ -1,5 +1,7 @@
 
 const controller = require('./app/controller/controller-index.js');
+const where = require('node-where');
+
 
 
 const express = require('express');
@@ -13,6 +15,15 @@ app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
+
+
+app.use (function (req, res, next) {
+    let IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    where.is(IP, function (err, result) {
+        req.geoip = result;
+        next();
+    })
+});
 
 
 
