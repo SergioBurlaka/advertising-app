@@ -9,12 +9,26 @@ db.once('open', function () {
     console.log('we are connected')
 });
 
+// const filterSchema = mongoose.Schema(
+// {
+//     filterName: String,
+//         settings: Object
+// }
+// );
+
 
 
 
 let advertisingSchema = mongoose.Schema({
-    message: String
+    message: String,
+    filters: [ {
+        filterName: String,
+        settings: Object
+    } ]
 });
+
+
+
 
 
 advertisingSchema.method('filter', function (greeting) {

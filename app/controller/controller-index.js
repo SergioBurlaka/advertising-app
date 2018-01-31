@@ -25,18 +25,34 @@ module.exports = {
 
  function index(req, res) {
 
+      let now = new Date();
+
+     // console.log('req.geoip ');
+     // console.log( req.geoip);
+
+     // console.log('req.country ' + req.country);
+     // console.log('req.localTime ' + req.localTime);
+
+     // let country =  req.geoip.attributes.country ||'country';
+     // if(!!req.location){
+     //     country = req.location.name;
+     // }
+
+     let country = req.country;
+     let date = req.localTime;
+     // console.log('req.localTime ' + req.localTime);
+
      let userID = req.params.userId;
      let browser = req.headers['user-agent'];
      let IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-     let date = new Date();
-     let country = req.geoip.attributes.country ||'country';
+
 
      advertiseService.getRandomAdvertise(req)
          .then(resp => {
              res.send(resp.message);
-             // console.log(' time for request ' );
-             // console.log( new Date() - now);
-             // console.log( resp.message);
+             console.log(' time for request ' );
+             console.log( new Date() - now);
+             console.log( resp.message);
              logService.addLog(userID,resp._id, browser, IP, country, date)
          })
 

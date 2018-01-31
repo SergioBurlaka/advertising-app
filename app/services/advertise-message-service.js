@@ -57,8 +57,7 @@ function findMaxDate(arr) {
 }
 
 
-
-function twoTimesPerTenMinutesFilter(logsAboutThisMessage) {
+function nTimesPerMinutesFilter(logsAboutThisMessage, showTimes, period) {
 
     let  now = new Date();
     let beginOfTenMinutes = new Date(
@@ -69,10 +68,8 @@ function twoTimesPerTenMinutesFilter(logsAboutThisMessage) {
         (Math.floor(now.getMinutes()/10)*10)
     );
 
-    // let maxLogDate = findMaxDate(logsAboutThisMessage);
 
     let counter = 0;
-
 
     for (let i = 0; i < logsAboutThisMessage.length; i++) {
 
@@ -80,21 +77,22 @@ function twoTimesPerTenMinutesFilter(logsAboutThisMessage) {
             counter++;
         }
 
-        if(counter === 2){
+        if(counter === showTimes){
             return false
         }
 
     }
 
-    if (counter === 1) {
-        let futureDate = new Date(Date.parse(new Date()) + 600000);
+    if (counter === showTimes - 1) {
+
+        let futureDate = new Date(Date.parse(new Date()) + period*60*1000);
         let messageId = logsAboutThisMessage[0].MessageID;
         let userId = logsAboutThisMessage[0].userID;
         addWillShowMessage(messageId, futureDate, userId)
             .then(() => false);
     }
 
-    if(counter < 2){
+    if(counter < showTimes){
         return true
     }
 
@@ -168,12 +166,11 @@ function getIdArrayOfAnything(arrOfMessages, field) {
 }
 
 
-function filterByCountry(userCountry) {
-
-    return userCountry === 'Ukraine'
+function filterByCountry(countryOfFilter,countryOfUser) {
+    return countryOfFilter === countryOfUser
 }
 
-function TwoTimesFilter(allLogsForThisUser, newAdvertise) {
+function nTimesAtPeriodFilter(allLogsForThisUser, newAdvertise, showTimes, period) {
 
 
     let logsAboutThisMessage = allLogsForThisUser.filter(
@@ -185,7 +182,7 @@ function TwoTimesFilter(allLogsForThisUser, newAdvertise) {
         return true
     }
 
-    return twoTimesPerTenMinutesFilter(logsAboutThisMessage);
+    return nTimesPerMinutesFilter(logsAboutThisMessage, showTimes, period);
 }
 
 
@@ -221,11 +218,112 @@ function wereTheMessagesAllShown(countOfIteratedMessages) {
 }
 
 
+function filterWorkOnPeriodOfTime( startTime, endTime, timeOfUser) {
+    let beginOfInterval =  new Date(Date.parse(startTime+''));
+    let endOfInterval =  new Date(Date.parse(endTime+''));
+    let userTime =  new Date (Date.parse(timeOfUser+''));
+
+
+    return (beginOfInterval < userTime) && (userTime < endOfInterval);
+
+}
+
+
+
+
+function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogsForThisUser, req) {
+    // console.log('iterateFilters');
+    // console.log(currentAdvertise.message);
+
+
+    // console.log(currentAdvertise.filters[0].filterName);
+
+    let countryOfUser = req.country;
+    let localTime = req.localTime;
+
+    for (let i = 0; i < currentAdvertise.filters.length; i++) {
+        // console.log('i ' + i);
+
+        switch (currentAdvertise.filters[i].filterName) {
+            case 'noFilter':
+                // console.log('noFilter');
+                return false;
+
+            case 'showByCountry':
+                // console.log('showByCountry ');
+
+                let countryOfFilter = currentAdvertise.filters[i].settings.country;
+                let filterByCountryValue = filterByCountry(countryOfFilter,countryOfUser);
+
+                if(filterByCountryValue){
+                    // console.log('true');
+                    break
+                }
+
+                return false;
+
+            case 'showAtPeriod':
+                // console.log('showAtPeriod');
+
+                let startTime = currentAdvertise.filters[i].settings.startTime;
+                let endTime = currentAdvertise.filters[i].settings.endTime;
+
+                 let filterByTimeInterval = filterWorkOnPeriodOfTime(startTime, endTime, localTime);
+
+                if(filterByTimeInterval){
+                    break
+                }
+                return false;
+
+
+            case 'showNTimesAtPeriod':
+
+                // console.log('showNTimesAtPeriod ');
+
+                if (messagesWillShow.length >= allMessages.length) {
+                    return false;
+                }
+
+
+                let showTimes = currentAdvertise.filters[i].settings.showTimes;
+                let period = currentAdvertise.filters[i].settings.period;
+
+                let filterByPeriod = nTimesAtPeriodFilter(allLogsForThisUser, currentAdvertise, showTimes, period);
+
+                // console.log('showTimes ' + showTimes);
+                // console.log('period ' + period);
+
+
+                if(filterByPeriod){
+                    break
+                }
+
+                return false;
+
+        }
+    }
+
+    return true
+}
+
+
+
+
 
 function getRandomAdvertise(req) {
 
-    // console.log('req.geoip');
-    // console.log(req.geoip);
+
+    // console.log( req.geoip.attributes.country );
+
+    // console.log('req.country ' + req.country);
+    // console.log('req.localTime ' + req.localTime);
+
+    // let country =  req.geoip.attributes.country ||'country';
+    // if(!!req.location){
+    //     country = req.location.name;
+    // }
+
+
 
   return Promise.all([
          db.advertisingMessage.find({}),
@@ -244,57 +342,50 @@ function getRandomAdvertise(req) {
 
 
             let generateMassage = true;
-            let newAdvertise;
 
             let countOfIteratedMessages = initIteratedArr(allMessages);
 
-
+            let newAdvertise;
 
             while (generateMassage){
 
 
-
-                newAdvertise = generateRandomMessage(allMessages);
+                 newAdvertise = generateRandomMessage(allMessages);
 
                 increaseCountForIteratedMessage(countOfIteratedMessages, newAdvertise);
-
                 let wasAllMessagesShown = wereTheMessagesAllShown(countOfIteratedMessages);
 
 
 
-                if(wasAllMessagesShown){
-
-                    return {
-                        message: " All messages was shown ",
-                    }
-                }
 
 
-                let stopGenerator;
+                // let filterByCountryValue = filterByCountry(country);
 
-
-                // if( newAdvertise._id+'' === "5a689f4c3d5c952a28fd7e2b" ){
-                //     stopGenerator = filterByCountry(req.geoip.attributes.country);
-                // }else{
-                //     return newAdvertise
+                // if (messagesWillShow.length >= allMessages.length) {
+                //     return warningMessageService.getNoMessageToShow()
+                //         .then(result => result[0])
                 // }
 
-                let filterByCountryValue = filterByCountry(req.geoip.attributes.country);
+                //  let filterByPeriod = TwoTimesFilter(allLogsForThisUser, newAdvertise);
 
-                if (messagesWillShow.length >= allMessages.length) {
-                                return warningMessageService.getNoMessageToShow()
-                                    .then(result => result[0])
-                            }
+                //  let filterByTimeInterval = filterWorkOnPeriodOfTime( startTime, endTime, localTime);
 
-                 let filterByPeriod = TwoTimesFilter(allLogsForThisUser, newAdvertise);
 
-                console.log('filterByCountryValue '+filterByCountryValue);
-                console.log('filterByPeriod '+filterByPeriod);
 
-                if(filterByCountryValue && filterByPeriod){
+
+
+                let returnCurrentAdvertise = iterateFilters(newAdvertise,
+                    messagesWillShow, allMessages, allLogsForThisUser,req);
+
+                if (returnCurrentAdvertise) {
                     return newAdvertise
                 }
 
+                if(wasAllMessagesShown){
+                    return {
+                        message: " All messages was shown "
+                    }
+                }
 
             }
 

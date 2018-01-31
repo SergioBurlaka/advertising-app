@@ -17,7 +17,6 @@ module.exports = {
 
 function addLog(userID,MessageID, browser, IP, country, date) {
 
-
     let newLog = new db.log({
         userID: userID,
         MessageID: MessageID,
