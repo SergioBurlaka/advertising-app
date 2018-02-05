@@ -66,7 +66,6 @@ let willShowMessagesSchema = mongoose.Schema({
 let willShowMessages = mongoose.model('willShowMessages', willShowMessagesSchema);
 
 
-// no messages to show
 
 let noMessageWarningSchema = mongoose.Schema({
     message: String

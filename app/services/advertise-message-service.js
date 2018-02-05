@@ -4,6 +4,9 @@ const logService = require('../services/log-service.js');
 const warningMessageService = require('../services/message-warning-service.js');
 let mongoose = require('mongoose');
 
+const ObjectId = require('mongodb').ObjectID;
+
+
 
 // addNoMessageToShow: addNoMessageToShow,
 // getNoMessageToShow: getNoMessageToShow
@@ -58,6 +61,8 @@ function findMaxDate(arr) {
 
 
 function nTimesPerMinutesFilter(logsAboutThisMessage, showTimes, period) {
+
+    // console.log()
 
     let  now = new Date();
     let beginOfTenMinutes = new Date(
@@ -170,6 +175,7 @@ function filterByCountry(countryOfFilter,countryOfUser) {
     return countryOfFilter === countryOfUser
 }
 
+
 function nTimesAtPeriodFilter(allLogsForThisUser, newAdvertise, showTimes, period) {
 
 
@@ -245,9 +251,7 @@ function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogs
         // console.log('i ' + i);
 
         switch (currentAdvertise.filters[i].filterName) {
-            case 'noFilter':
-                // console.log('noFilter');
-                return false;
+
 
             case 'showByCountry':
                 // console.log('showByCountry ');
@@ -275,10 +279,9 @@ function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogs
                 }
                 return false;
 
-
             case 'showNTimesAtPeriod':
 
-                // console.log('showNTimesAtPeriod ');
+                console.log('showNTimesAtPeriod ');
 
                 if (messagesWillShow.length >= allMessages.length) {
                     return false;
@@ -290,8 +293,8 @@ function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogs
 
                 let filterByPeriod = nTimesAtPeriodFilter(allLogsForThisUser, currentAdvertise, showTimes, period);
 
-                // console.log('showTimes ' + showTimes);
-                // console.log('period ' + period);
+                console.log('showTimes ' + showTimes);
+                console.log('period ' + period);
 
 
                 if(filterByPeriod){
@@ -300,11 +303,97 @@ function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogs
 
                 return false;
 
+            case 'noFilter':
+                // console.log('noFilter');
+                return false;
+
         }
     }
 
     return true
 }
+
+
+
+function getArrOfWillShowMessagsId(arrOfWillShowMessages) {
+    let arrOfId = [];
+    // console.log('arrOfWillShowMessages');
+    // console.log(arrOfWillShowMessages);
+    // console.log(arrOfWillShowMessages.length);
+
+    for (let i = 0; i < arrOfWillShowMessages.length; i++) {
+        arrOfId.push(ObjectId(arrOfWillShowMessages[i].MesId));
+        // console.log(arrOfWillShowMessages[i].MesId);
+        // arrOfId.push(arrOfWillShowMessages[i].MesId);
+    }
+
+    return arrOfId
+}
+
+function collectAllLogs(arrOfResolves) {
+    let arrOfLogs = [];
+
+    for(let i=0; i < arrOfResolves.length; i++ ){
+        arrOfLogs = [...arrOfLogs, ...arrOfResolves[i]]
+    }
+
+    return arrOfLogs
+}
+
+
+
+
+function findLogs(arrOfFilters) {
+    let arrOfLogsRequest = [];
+    let now = new Date ();
+
+    console.log('now '+ now);
+
+    for(let i=0; i< arrOfFilters.length; i++ ){
+
+        let tempResultReq =  db.log.find({
+            MessageID: arrOfFilters[i].messagesId,
+            date: { $gte:  new Date( now - arrOfFilters[i].period *60*1000) }
+        });
+
+        arrOfLogsRequest.push(tempResultReq);
+
+
+    }
+
+    return Promise.all(arrOfLogsRequest)
+}
+
+
+function getFilterSettings(arrOfMessages) {
+    // currentAdvertise.filters[i].filterName 'showNTimesAtPeriod'
+    //
+    // currentAdvertise.filters[i].settings.period;
+
+    let arrOfFilterSettings = [];
+    for(let i=0; i< arrOfMessages.length; i++){
+
+        for(let j =0; j < arrOfMessages[i].filters.length; j++ ){
+
+            if(arrOfMessages[i].filters[j].filterName === 'showNTimesAtPeriod'){
+                let period =  arrOfMessages[i].filters[j].settings.period;
+                arrOfFilterSettings.push({
+                    period: period,
+                    messagesId: ObjectId(arrOfMessages[i]._id)
+                })
+            }
+
+        }
+
+
+
+    }
+
+    return arrOfFilterSettings
+}
+
+
+
 
 
 
@@ -325,73 +414,151 @@ function getRandomAdvertise(req) {
 
 
 
-  return Promise.all([
-         db.advertisingMessage.find({}),
-         db.log.find({}),
-         db.willShowMessages.find({
-                  $and: [
-                      {date: {$gt: new Date()}},
-                      {useId: req.params.userId}
-                  ]
-              })
 
-     ]).then( result =>{
-            let allMessages = result[0];
-            let allLogsForThisUser = result[1];
-            let messagesWillShow = result[2];
+    return Promise.all([
+        db.advertisingMessage.find({}),
+        db.willShowMessages.find({
+            $and: [
+                {date: {$gt: new Date()}},
+                {useId: req.params.userId}
+            ]
+        }),
+        db.noMessageWarning
+            .find({ "_id": ObjectId("5a6afb9161cb6c1f103e7918") })
 
+    ]).then(result => {
+        let allMessages = result[0];
+        let messagesWillShow = result[1];
+        let warningMessage = result[2];
 
-            let generateMassage = true;
-
-            let countOfIteratedMessages = initIteratedArr(allMessages);
-
-            let newAdvertise;
-
-            while (generateMassage){
+        let arrOfWillShowMessagesId = getArrOfWillShowMessagsId(messagesWillShow);
+        arrOfWillShowMessagesId.push(ObjectId(warningMessage[0]._id));
 
 
-                 newAdvertise = generateRandomMessage(allMessages);
+        console.log('arrOfWillShowMessagesId');
+        console.log( arrOfWillShowMessagesId);
 
-                increaseCountForIteratedMessage(countOfIteratedMessages, newAdvertise);
-                let wasAllMessagesShown = wereTheMessagesAllShown(countOfIteratedMessages);
+        let now = new Date();
+        let tenMinutesAgo = new Date(now - 600000);
 
 
 
+        let filterSettings = getFilterSettings(allMessages);
 
-
-                // let filterByCountryValue = filterByCountry(country);
-
-                // if (messagesWillShow.length >= allMessages.length) {
-                //     return warningMessageService.getNoMessageToShow()
-                //         .then(result => result[0])
-                // }
-
-                //  let filterByPeriod = TwoTimesFilter(allLogsForThisUser, newAdvertise);
-
-                //  let filterByTimeInterval = filterWorkOnPeriodOfTime( startTime, endTime, localTime);
+        console.log('filterSettings');
+        console.log(filterSettings);
 
 
 
+        // let messagesForFilter = [
+        //     {
+        //         period: 200,
+        //         messagesId: ObjectId('5a78196ff6d3761ee0deaa11')
+        //     },
+        //     {
+        //         period: 200,
+        //         messagesId: ObjectId('5a78196ff6d3761ee0deaa13')
+        //     },
+        //     {
+        //         period: 200,
+        //         messagesId: ObjectId('5a78196ff6d3761ee0deaa15')
+        //     },
+        //     {
+        //         period: 200,
+        //         messagesId: ObjectId('5a78196ff6d3761ee0deaa17')
+        //     }
+        // ];
 
 
-                let returnCurrentAdvertise = iterateFilters(newAdvertise,
-                    messagesWillShow, allMessages, allLogsForThisUser,req);
+        let filteredLogs = findLogs(filterSettings);
 
-                if (returnCurrentAdvertise) {
-                    return newAdvertise
-                }
+        return Promise.all([
+            filteredLogs,
+            db.log.find({
+                MessageID: {  $ne: ObjectId("5a6afb9161cb6c1f103e7918") },
+                date: { $gte: tenMinutesAgo }
+            }),
+            allMessages,
+            messagesWillShow,
+            db.log.find({MessageID: {  $ne: ObjectId("5a6afb9161cb6c1f103e7918") }}),
 
-                if(wasAllMessagesShown){
-                    return {
-                        message: " All messages was shown "
-                    }
-                }
+        ])
 
+    }).then( result =>{
+
+        let logsByFilter = result[0];
+
+
+        let allLogsByFilters = collectAllLogs(logsByFilter);
+
+        console.log('|*|  allLogsByFilters  '+allLogsByFilters.length);
+        // console.log(allLogsByFilters);
+
+
+
+
+        // let allLogsForThisUser = result[1];
+        let allLogsForThisUser = allLogsByFilters;
+        console.log('allLogsForThisUser '+allLogsForThisUser.length);
+
+        // let logsByFilter = result[1];
+        // console.log('logsByFilter.length '+logsByFilter.length);
+        // console.log(logsByFilter);
+
+        let allMessages = result[2];
+
+        let messagesWillShow = result[3];
+        console.log('messagesWillShow.length '+messagesWillShow.length);
+
+        let allLogs = result[4];
+        console.log('allLogs.length '+allLogs.length);
+
+
+
+        let generateMassage = true;
+
+        let countOfIteratedMessages = initIteratedArr(allMessages);
+
+
+        while (generateMassage){
+
+
+            let newAdvertise = generateRandomMessage(allMessages);
+
+            increaseCountForIteratedMessage(countOfIteratedMessages, newAdvertise);
+            let wasAllMessagesShown = wereTheMessagesAllShown(countOfIteratedMessages);
+
+
+
+            let returnCurrentAdvertise = iterateFilters(newAdvertise,
+                messagesWillShow, allMessages, allLogsForThisUser,req);
+
+
+            if (returnCurrentAdvertise) {
+                return newAdvertise
             }
 
 
+            if(wasAllMessagesShown){
+                return db.noMessageWarning
+                    .find({ "_id": ObjectId("5a6afb9161cb6c1f103e7918") })
+                    .then(result => {
+                        return result[0]
 
-        })
+                    })
+            }
+
+        }
+
+
+
+
+    });
+
+
+
+
+
 
 
 
@@ -501,6 +668,7 @@ function getRandomAdvertise(req) {
 
 
 }
+
 
 
 

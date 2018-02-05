@@ -21,7 +21,7 @@ let showAtPeriod = {
 let showNTimesAtPeriod = {
     filterName: 'showNTimesAtPeriod',
     settings: {
-        showTimes: 3,
+        showTimes: 2,
         period: 10
     }
 };
@@ -43,33 +43,57 @@ let noFilter =  {
 };
 
 // showByCountry, showNTimesAtPeriod  done
+//
+// let template = [
+//
+//     {
+//         message: "1 advertising message filters: [showAtPeriod, showByCountry ]",
+//         filters: [showAtPeriod, showByCountry ]
+//     },
+//     {
+//         message: "2 advertising message filters: [ showAtPeriod, showNTimesAtPeriod, showByCountry ]",
+//         filters: [ showAtPeriod, showNTimesAtPeriod, showByCountry ]
+//     },
+//
+//     {
+//         message: "3 advertising message filters: [ showAtPeriod, showNTimesAtPeriod ]",
+//         filters: [ showAtPeriod, showNTimesAtPeriod ]
+//     },
+//
+//     {
+//         message: "4 advertising message filters: [ showNTimesAtPeriod, showByCountry]",
+//         filters: [ showNTimesAtPeriod, showByCountry]
+//     },
+//     {
+//         message: "5 advertising message filters: []",
+//         filters: []
+//     }
+//
+// ];
 
-let template = [
+
+let advertise = [
 
     {
-        message: "1 advertising message filters: [showAtPeriod, showByCountry ]",
-        filters: [showAtPeriod, showByCountry ]
+        message: "1 advertising message filters: [showNTimesAtPeriod ]",
+        filters: [showNTimesAtPeriod ]
     },
     {
-        message: "2 advertising message filters: [ showAtPeriod, showNTimesAtPeriod, showByCountry ]",
-        filters: [ showAtPeriod, showNTimesAtPeriod, showByCountry ]
+        message: "2 advertising message filters: [  showNTimesAtPeriod]",
+        filters: [ showNTimesAtPeriod ]
     },
 
     {
-        message: "3 advertising message filters: [ showAtPeriod, showNTimesAtPeriod ]",
-        filters: [ showAtPeriod, showNTimesAtPeriod ]
+        message: "3 advertising message filters: [ showNTimesAtPeriod ]",
+        filters: [  showNTimesAtPeriod ]
     },
 
     {
-        message: "4 advertising message filters: [ showNTimesAtPeriod, showByCountry]",
-        filters: [ showNTimesAtPeriod, showByCountry]
-    },
-    {
-        message: "5 advertising message filters: []",
-        filters: []
+        message: "4 advertising message filters: [ showNTimesAtPeriod]",
+        filters: [ showNTimesAtPeriod]
     }
-
 ];
+
 
 
 
@@ -90,7 +114,7 @@ function generateNMessages(arrOfTemplate, numberOfMessages) {
     return arrOfMessages
 }
 
-let advertise = generateNMessages(template, 10);
+// let advertise = generateNMessages(template, 10);
 
 
 
@@ -135,17 +159,17 @@ function generateLogsForMessage(numberOfLogs, MessageID) {
 
     for(let i = 0; i < numberOfLogs; i++){
         arrOfLogs.push(
-        {
-            userID: "2",
-            MessageID: MessageID,
-            browser: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" +
-            " AppleWebKit/537.36 (KHTML, like Gecko) " +
-            "Chrome/63.0.3239.132 Safari/537.36",
-            IP: "37.57.18.160",
-            country: "Ukraine",
-            date: "2018-01-18T15:29:26.619Z"
+            {
+                userID: "2",
+                MessageID: MessageID,
+                browser: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" +
+                " AppleWebKit/537.36 (KHTML, like Gecko) " +
+                "Chrome/63.0.3239.132 Safari/537.36",
+                IP: "37.57.18.160",
+                country: "Ukraine",
+                date: "2018-01-18T15:29:26.619Z"
 
-        })
+            })
     }
 
     return arrOfLogs
@@ -157,7 +181,7 @@ function seedingLogs() {
     let numberOfLogs = 1000;
     db.log.remove({})
         .then( () => {
-          return  db.advertisingMessage.find({})
+            return  db.advertisingMessage.find({})
         })
         .then( resp =>{
 
@@ -166,7 +190,7 @@ function seedingLogs() {
 
             for(let i = 0; i < resp.length; i++){
 
-             let logsForMessage = generateLogsForMessage(numberOfLogs, resp[i]._id);
+                let logsForMessage = generateLogsForMessage(numberOfLogs, resp[i]._id);
                 logs = [...logs,...logsForMessage]
             }
 
@@ -179,7 +203,7 @@ function seedingLogs() {
                 });
             }
 
-           console.log(' logs.length '+ logs.length);
+            console.log(' logs.length '+ logs.length);
 
         });
 
@@ -227,4 +251,3 @@ function seedingMessages() {
 
 
 }
-
