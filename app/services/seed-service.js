@@ -97,35 +97,35 @@ let template = [
     {
         message: "1 advertising message filters: " +
         "[oneTimeAtFiveMinutes, showByCountry,showAtPeriod]",
-        filters: [oneTimeAtFiveMinutes,showByCountry,showAtPeriod,noFilter]
+        filters: [oneTimeAtFiveMinutes,showByCountry,showAtPeriod]
     },
     {
         message: "2 advertising message filters: " +
         "[oneTimeAtFiveMinutes, showByCountry,showAtPeriod]",
-        filters: [twoTimeAtSixMinutes, showByCountry,showAtPeriod,noFilter]
+        filters: [twoTimeAtSixMinutes, showByCountry,showAtPeriod]
     },
 
     {
         message: "3 advertising message filters: " +
         "[threeTimeAtSevenMinutes, showByCountry,showAtPeriod]",
-        filters: [threeTimeAtSevenMinutes, showByCountry,showAtPeriod,noFilter]
+        filters: [threeTimeAtSevenMinutes, showByCountry,showAtPeriod]
     },
 
     {
         message: "4 advertising message filters: " +
         "[fourTimeAtEightMinutes, showByCountry,showAtPeriod]",
-        filters: [fourTimeAtEightMinutes, showByCountry,showAtPeriod,noFilter]
+        filters: [fourTimeAtEightMinutes, showByCountry,showAtPeriod]
     },
     {
         message: "5 advertising message filters: " +
         "[fiveTimeAtTenMinutes, showAtPeriod]",
-        filters: [fiveTimeAtTenMinutes,showAtPeriod,noFilter]
+        filters: [fiveTimeAtTenMinutes,showAtPeriod]
     }
 
 ];
 
 
-
+//
 // let template = [
 //
 //     {

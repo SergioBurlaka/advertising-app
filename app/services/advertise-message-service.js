@@ -62,7 +62,6 @@ function findMaxDate(arr) {
 
 function nTimesPerMinutesFilter(logsAboutThisMessage, showTimes, period) {
 
-    // console.log()
 
     let  now = new Date();
     let beginOfTenMinutes = new Date(
@@ -100,6 +99,23 @@ function nTimesPerMinutesFilter(logsAboutThisMessage, showTimes, period) {
     if(counter < showTimes){
         return true
     }
+
+
+}
+
+
+function createWillShowMessage(logsAboutThisMessage, showTimes, period) {
+
+
+    if (logsAboutThisMessage.length === showTimes - 1) {
+
+        let futureDate = new Date(Date.parse(new Date()) + period*60*1000);
+        let messageId = logsAboutThisMessage[0].MessageID;
+        let userId = logsAboutThisMessage[0].userID;
+        addWillShowMessage(messageId, futureDate, userId)
+            .then(() => false);
+    }
+
 
 
 }
@@ -176,6 +192,8 @@ function filterByCountry(countryOfFilter,countryOfUser) {
 }
 
 
+
+
 function nTimesAtPeriodFilter(allLogsForThisUser, newAdvertise, showTimes, period) {
 
 
@@ -190,6 +208,8 @@ function nTimesAtPeriodFilter(allLogsForThisUser, newAdvertise, showTimes, perio
 
     return nTimesPerMinutesFilter(logsAboutThisMessage, showTimes, period);
 }
+
+
 
 
 function initIteratedArr(arrOfAdvertise) {
@@ -236,8 +256,13 @@ function filterWorkOnPeriodOfTime( startTime, endTime, timeOfUser) {
 
 
 
+// function isAdvertiseInWillShowColection(willShowMessages, currentMessage) {
+//
+// }
 
-function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogsForThisUser, req) {
+// iterateFilters(newAdvertise,messagesWillShow, allMessages,req);
+
+function iterateFilters(currentAdvertise, messagesWillShow, allMessages, req) {
     // console.log('iterateFilters');
     // console.log(currentAdvertise.message);
 
@@ -251,7 +276,6 @@ function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogs
         // console.log('i ' + i);
 
         switch (currentAdvertise.filters[i].filterName) {
-
 
             case 'showByCountry':
                 // console.log('showByCountry ');
@@ -272,36 +296,53 @@ function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogs
                 let startTime = currentAdvertise.filters[i].settings.startTime;
                 let endTime = currentAdvertise.filters[i].settings.endTime;
 
+
                  let filterByTimeInterval = filterWorkOnPeriodOfTime(startTime, endTime, localTime);
+
+
 
                 if(filterByTimeInterval){
                     break
                 }
+
                 return false;
 
             case 'showNTimesAtPeriod':
 
                 // console.log('showNTimesAtPeriod ');
 
+                let currentMessageId = currentAdvertise._id;
+
+
                 if (messagesWillShow.length >= allMessages.length) {
                     return false;
                 }
 
-
-                let showTimes = currentAdvertise.filters[i].settings.showTimes;
-                let period = currentAdvertise.filters[i].settings.period;
-
-                let filterByPeriod = nTimesAtPeriodFilter(allLogsForThisUser, currentAdvertise, showTimes, period);
-
-                // console.log('showTimes ' + showTimes);
-                // console.log('period ' + period);
+                let isMessageInWillShowCollection = messagesWillShow.some( item => item.MesId+'' === currentMessageId+'');
 
 
-                if(filterByPeriod){
-                    break
+                if(isMessageInWillShowCollection){
+                    return false;
+
                 }
 
-                return false;
+
+                break;
+
+
+
+
+                // let filterByPeriod = nTimesAtPeriodFilter(allLogsForThisUser, currentAdvertise, showTimes, period);
+                //
+                // // console.log('showTimes ' + showTimes);
+                // // console.log('period ' + period);
+                //
+                //
+                // if(filterByPeriod){
+                //     break
+                // }
+                //
+                // return false;
 
             case 'noFilter':
                 // console.log('noFilter');
@@ -347,10 +388,10 @@ function findLogs(arrOfFilters) {
     let arrOfLogsRequest = [];
     let now = new Date ();
 
-    let queries = arrOfFilters.map(f => db.log.find({
-        MessageID: f.messagesId,
-        date: { $gte:  new Date( now - f.period *60*1000) }
-    }));
+    // let queries = arrOfFilters.map(f => db.log.find({
+    //     MessageID: f.messagesId,
+    //     date: { $gte:  new Date( now - f.period *60*1000) }
+    // }));
 
     for(let i=0; i< arrOfFilters.length; i++ ){
 
@@ -469,17 +510,19 @@ function getRandomAdvertise(req) {
         //     }
         // ];
 
+/////////////////////////
 
-        let filterSettings = getFilterSettings(allMessages);
+
+        // let filterSettings = getFilterSettings(allMessages);
 
         // console.log('filterSettings');
         // console.log(filterSettings);
 
-        let filteredLogs = findLogs(filterSettings);
-
+        // let filteredLogs = findLogs(filterSettings);
+        //
+        // filteredLogs,
 
         return Promise.all([
-            filteredLogs,
             allMessages,
             messagesWillShow
 
@@ -519,12 +562,12 @@ function getRandomAdvertise(req) {
 
         console.log('queryToDB '+ queryToDB);
 
-        let logsByFilter = result[0];
-        let allLogsForThisUser = collectAllLogs(logsByFilter);
-        console.log('allLogsForThisUser '+ allLogsForThisUser.length);
+        // let logsByFilter = result[0];
+        // let allLogsForThisUser = collectAllLogs(logsByFilter);
+        // console.log('allLogsForThisUser '+ allLogsForThisUser.length);
 
-        let allMessages = result[1];
-        let messagesWillShow = result[2];
+        let allMessages = result[0];
+        let messagesWillShow = result[1];
 
 
         let generateMassage = true;
@@ -540,13 +583,56 @@ function getRandomAdvertise(req) {
             let wasAllMessagesShown = wereTheMessagesAllShown(countOfIteratedMessages);
 
 
+            //
+            // let returnCurrentAdvertise = iterateFilters(newAdvertise,
+            //     messagesWillShow, allMessages, allLogsForThisUser,req);
 
             let returnCurrentAdvertise = iterateFilters(newAdvertise,
-                messagesWillShow, allMessages, allLogsForThisUser,req);
+                messagesWillShow, allMessages,req);
 
 
             if (returnCurrentAdvertise) {
+
+
+                let filtersOfMessage = newAdvertise.filters;
+
+                let isShowNTimesAtPeriod  = filtersOfMessage.some( item => item.filterName === 'showNTimesAtPeriod');
+
+                if(isShowNTimesAtPeriod){
+
+                   let filter =  filtersOfMessage.filter(item => item.filterName === 'showNTimesAtPeriod');
+
+
+                    let userId = req.params.userId;
+
+                    let showTimes = filter[0].settings.showTimes;
+                    let period = filter[0].settings.period;
+
+
+                    db.log.find({
+                        MessageID: newAdvertise._id,
+                        date: {$gte: new Date(new Date() - period * 60 * 1000)}
+                    }).then(result => {
+
+
+                        if (result.length === showTimes - 1) {
+
+                            let futureDate = new Date(Date.parse(new Date()) + period*60*1000);
+
+                            addWillShowMessage(newAdvertise, futureDate, userId)
+                                .then(() => newAdvertise );
+                        }
+
+
+                    });
+
+
+                }
+
+
+
                 return newAdvertise
+
             }
 
 
