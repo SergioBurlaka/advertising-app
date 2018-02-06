@@ -10,13 +10,7 @@ module.exports = {
 };
 
 
-let showAtPeriod = {
-    filterName: 'showAtPeriod',
-    settings: {
-        startTime: '2018-01-31T12:00:00+02:00',
-        endTime: '2018-01-31T17:00:00+02:00'
-    }
-};
+
 
 let showNTimesAtPeriod = {
     filterName: 'showNTimesAtPeriod',
@@ -27,6 +21,52 @@ let showNTimesAtPeriod = {
 };
 
 
+let oneTimeAtFiveMinutes = {
+    filterName: 'showNTimesAtPeriod',
+    settings: {
+        showTimes: 1,
+        period: 5
+    }
+};
+
+
+let twoTimeAtSixMinutes = {
+    filterName: 'showNTimesAtPeriod',
+    settings: {
+        showTimes: 2,
+        period: 6
+    }
+};
+
+
+let threeTimeAtSevenMinutes = {
+    filterName: 'showNTimesAtPeriod',
+    settings: {
+        showTimes: 3,
+        period: 7
+    }
+};
+
+let fourTimeAtEightMinutes = {
+    filterName: 'showNTimesAtPeriod',
+    settings: {
+        showTimes: 4,
+        period: 8
+    }
+};
+
+let fiveTimeAtTenMinutes = {
+    filterName: 'showNTimesAtPeriod',
+    settings: {
+        showTimes: 5,
+        period: 10
+    }
+};
+
+
+
+
+
 let showByCountry =  {
     filterName: 'showByCountry',
     settings: {
@@ -34,6 +74,14 @@ let showByCountry =  {
     }
 };
 
+
+let showAtPeriod = {
+    filterName: 'showAtPeriod',
+    settings: {
+        startTime: '2018-02-05T09:15:31.822Z',
+        endTime: '2018-02-07T09:15:31.822Z'
+    }
+};
 
 
 
@@ -43,57 +91,96 @@ let noFilter =  {
 };
 
 // showByCountry, showNTimesAtPeriod  done
-//
+
+let template = [
+
+    {
+        message: "1 advertising message filters: " +
+        "[oneTimeAtFiveMinutes, showByCountry,showAtPeriod]",
+        filters: [oneTimeAtFiveMinutes,showByCountry,showAtPeriod,noFilter]
+    },
+    {
+        message: "2 advertising message filters: " +
+        "[oneTimeAtFiveMinutes, showByCountry,showAtPeriod]",
+        filters: [twoTimeAtSixMinutes, showByCountry,showAtPeriod,noFilter]
+    },
+
+    {
+        message: "3 advertising message filters: " +
+        "[threeTimeAtSevenMinutes, showByCountry,showAtPeriod]",
+        filters: [threeTimeAtSevenMinutes, showByCountry,showAtPeriod,noFilter]
+    },
+
+    {
+        message: "4 advertising message filters: " +
+        "[fourTimeAtEightMinutes, showByCountry,showAtPeriod]",
+        filters: [fourTimeAtEightMinutes, showByCountry,showAtPeriod,noFilter]
+    },
+    {
+        message: "5 advertising message filters: " +
+        "[fiveTimeAtTenMinutes, showAtPeriod]",
+        filters: [fiveTimeAtTenMinutes,showAtPeriod,noFilter]
+    }
+
+];
+
+
+
 // let template = [
 //
 //     {
-//         message: "1 advertising message filters: [showAtPeriod, showByCountry ]",
-//         filters: [showAtPeriod, showByCountry ]
+//         message: "1 advertising message filters: " +
+//         "[oneTimeAtFiveMinutes, showByCountry,showAtPeriod]",
+//         filters: [showNTimesAtPeriod]
 //     },
 //     {
-//         message: "2 advertising message filters: [ showAtPeriod, showNTimesAtPeriod, showByCountry ]",
-//         filters: [ showAtPeriod, showNTimesAtPeriod, showByCountry ]
-//     },
-//
-//     {
-//         message: "3 advertising message filters: [ showAtPeriod, showNTimesAtPeriod ]",
-//         filters: [ showAtPeriod, showNTimesAtPeriod ]
+//         message: "2 advertising message filters: " +
+//         "[oneTimeAtFiveMinutes, showByCountry,showAtPeriod]",
+//         filters: [showNTimesAtPeriod]
 //     },
 //
 //     {
-//         message: "4 advertising message filters: [ showNTimesAtPeriod, showByCountry]",
-//         filters: [ showNTimesAtPeriod, showByCountry]
+//         message: "3 advertising message filters: " +
+//         "[threeTimeAtSevenMinutes, showByCountry,showAtPeriod]",
+//         filters: [showNTimesAtPeriod]
+//     },
+//
+//     {
+//         message: "4 advertising message filters: " +
+//         "[fourTimeAtEightMinutes, showByCountry,showAtPeriod]",
+//         filters: [showNTimesAtPeriod]
 //     },
 //     {
-//         message: "5 advertising message filters: []",
-//         filters: []
+//         message: "5 advertising message filters: " +
+//         "[fiveTimeAtTenMinutes, showAtPeriod]",
+//         filters: [showNTimesAtPeriod]
 //     }
 //
 // ];
 
-
-let advertise = [
-
-    {
-        message: "1 advertising message filters: [showNTimesAtPeriod ]",
-        filters: [showNTimesAtPeriod ]
-    },
-    {
-        message: "2 advertising message filters: [  showNTimesAtPeriod]",
-        filters: [ showNTimesAtPeriod ]
-    },
-
-    {
-        message: "3 advertising message filters: [ showNTimesAtPeriod ]",
-        filters: [  showNTimesAtPeriod ]
-    },
-
-    {
-        message: "4 advertising message filters: [ showNTimesAtPeriod]",
-        filters: [ showNTimesAtPeriod]
-    }
-];
-
+//
+// let advertise = [
+//
+//     {
+//         message: "1 advertising message filters: [showNTimesAtPeriod ]",
+//         filters: [showNTimesAtPeriod ]
+//     },
+//     {
+//         message: "2 advertising message filters: [  showNTimesAtPeriod]",
+//         filters: [ showNTimesAtPeriod ]
+//     },
+//
+//     {
+//         message: "3 advertising message filters: [ showNTimesAtPeriod ]",
+//         filters: [  showNTimesAtPeriod ]
+//     },
+//
+//     {
+//         message: "4 advertising message filters: [ showNTimesAtPeriod]",
+//         filters: [ showNTimesAtPeriod]
+//     }
+// ];
+//
 
 
 
@@ -110,46 +197,14 @@ function generateNMessages(arrOfTemplate, numberOfMessages) {
         }
     }
 
+    console.log('arrOfMessages.length '+arrOfMessages.length);
 
     return arrOfMessages
 }
 
-// let advertise = generateNMessages(template, 10);
+let advertise = generateNMessages(template, 10);
 
 
-
-
-
-//
-// let logs = [
-//     {
-//         userID: "1",
-//         MessageID: "5a5e2cef064d5e11706e1f8a",
-//         browser: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
-//         IP: "::1",
-//         country: "country",
-//         date: "2018-01-18T15:29:11.915Z"
-//
-//     },
-//     {
-//         userID: "3",
-//         MessageID: "5a5e2cef064d5e11706e1f8c",
-//         browser: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
-//         IP: "::1",
-//         country: "country",
-//         date: "2018-01-18T15:29:18.975Z"
-//
-//     },
-//     {
-//         userID: "3",
-//         MessageID: "5a5e2cef064d5e11706e1f8d",
-//         browser: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
-//         IP: "::1",
-//         country: "country",
-//         date: "2018-01-18T15:29:26.619Z"
-//
-//     }
-// ];
 
 
 

@@ -281,7 +281,7 @@ function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogs
 
             case 'showNTimesAtPeriod':
 
-                console.log('showNTimesAtPeriod ');
+                // console.log('showNTimesAtPeriod ');
 
                 if (messagesWillShow.length >= allMessages.length) {
                     return false;
@@ -293,8 +293,8 @@ function iterateFilters(currentAdvertise, messagesWillShow, allMessages, allLogs
 
                 let filterByPeriod = nTimesAtPeriodFilter(allLogsForThisUser, currentAdvertise, showTimes, period);
 
-                console.log('showTimes ' + showTimes);
-                console.log('period ' + period);
+                // console.log('showTimes ' + showTimes);
+                // console.log('period ' + period);
 
 
                 if(filterByPeriod){
@@ -347,7 +347,10 @@ function findLogs(arrOfFilters) {
     let arrOfLogsRequest = [];
     let now = new Date ();
 
-    console.log('now '+ now);
+    let queries = arrOfFilters.map(f => db.log.find({
+        MessageID: f.messagesId,
+        date: { $gte:  new Date( now - f.period *60*1000) }
+    }));
 
     for(let i=0; i< arrOfFilters.length; i++ ){
 
@@ -366,17 +369,14 @@ function findLogs(arrOfFilters) {
 
 
 function getFilterSettings(arrOfMessages) {
-    // currentAdvertise.filters[i].filterName 'showNTimesAtPeriod'
-    //
-    // currentAdvertise.filters[i].settings.period;
 
     let arrOfFilterSettings = [];
-    for(let i=0; i< arrOfMessages.length; i++){
+    for (let i = 0; i < arrOfMessages.length; i++) {
 
-        for(let j =0; j < arrOfMessages[i].filters.length; j++ ){
+        for (let j = 0; j < arrOfMessages[i].filters.length; j++) {
 
-            if(arrOfMessages[i].filters[j].filterName === 'showNTimesAtPeriod'){
-                let period =  arrOfMessages[i].filters[j].settings.period;
+            if (arrOfMessages[i].filters[j].filterName === 'showNTimesAtPeriod') {
+                let period = arrOfMessages[i].filters[j].settings.period;
                 arrOfFilterSettings.push({
                     period: period,
                     messagesId: ObjectId(arrOfMessages[i]._id)
@@ -384,8 +384,6 @@ function getFilterSettings(arrOfMessages) {
             }
 
         }
-
-
 
     }
 
@@ -413,40 +411,42 @@ function getRandomAdvertise(req) {
     // }
 
 
-
+        let startQuery = new Date();
 
     return Promise.all([
-        db.advertisingMessage.find({}),
-        db.willShowMessages.find({
+        db.advertisingMessage
+            .find({}),
+        db.willShowMessages
+            .find({
             $and: [
                 {date: {$gt: new Date()}},
                 {useId: req.params.userId}
             ]
-        }),
-        db.noMessageWarning
-            .find({ "_id": ObjectId("5a6afb9161cb6c1f103e7918") })
+        })
 
     ]).then(result => {
+
         let allMessages = result[0];
         let messagesWillShow = result[1];
-        let warningMessage = result[2];
 
-        let arrOfWillShowMessagesId = getArrOfWillShowMessagsId(messagesWillShow);
-        arrOfWillShowMessagesId.push(ObjectId(warningMessage[0]._id));
-
-
-        console.log('arrOfWillShowMessagesId');
-        console.log( arrOfWillShowMessagesId);
-
-        let now = new Date();
-        let tenMinutesAgo = new Date(now - 600000);
+    // ,
+    //     db.noMessageWarning
+    //         .find({ "_id": ObjectId("5a6afb9161cb6c1f103e7918") })
+        // let warningMessage = result[2];
 
 
 
-        let filterSettings = getFilterSettings(allMessages);
 
-        console.log('filterSettings');
-        console.log(filterSettings);
+
+
+        // let arrOfWillShowMessagesId = getArrOfWillShowMessagsId(messagesWillShow);
+        // arrOfWillShowMessagesId.push(ObjectId(warningMessage[0]._id));
+
+
+        // console.log('arrOfWillShowMessagesId');
+        // console.log( arrOfWillShowMessagesId);
+
+
 
 
 
@@ -470,53 +470,64 @@ function getRandomAdvertise(req) {
         // ];
 
 
+        let filterSettings = getFilterSettings(allMessages);
+
+        // console.log('filterSettings');
+        // console.log(filterSettings);
+
         let filteredLogs = findLogs(filterSettings);
+
 
         return Promise.all([
             filteredLogs,
-            db.log.find({
-                MessageID: {  $ne: ObjectId("5a6afb9161cb6c1f103e7918") },
-                date: { $gte: tenMinutesAgo }
-            }),
             allMessages,
-            messagesWillShow,
-            db.log.find({MessageID: {  $ne: ObjectId("5a6afb9161cb6c1f103e7918") }}),
+            messagesWillShow
 
         ])
 
     }).then( result =>{
 
-        let logsByFilter = result[0];
+        // db.log.find({
+        //     MessageID: {  $ne: ObjectId("5a6afb9161cb6c1f103e7918") },
+        //     date: { $gte: tenMinutesAgo }
+        // }),
+
+        // db.log.find({MessageID: {  $ne: ObjectId("5a6afb9161cb6c1f103e7918") }}),
 
 
-        let allLogsByFilters = collectAllLogs(logsByFilter);
-
-        console.log('|*|  allLogsByFilters  '+allLogsByFilters.length);
+        // console.log('|*|  allLogsByFilters  '+allLogsByFilters.length);
         // console.log(allLogsByFilters);
 
 
 
-
         // let allLogsForThisUser = result[1];
-        let allLogsForThisUser = allLogsByFilters;
-        console.log('allLogsForThisUser '+allLogsForThisUser.length);
+        // let allLogsForThisUser = allLogsByFilters;
+        // console.log('allLogsForThisUser '+allLogsForThisUser.length);
 
         // let logsByFilter = result[1];
         // console.log('logsByFilter.length '+logsByFilter.length);
         // console.log(logsByFilter);
 
-        let allMessages = result[2];
 
-        let messagesWillShow = result[3];
-        console.log('messagesWillShow.length '+messagesWillShow.length);
 
-        let allLogs = result[4];
-        console.log('allLogs.length '+allLogs.length);
+        // console.log('messagesWillShow.length '+messagesWillShow.length);
 
+        // let allLogs = result[4];
+        // console.log('allLogs.length '+allLogs.length);
+
+        let  queryToDB = new Date() - startQuery;
+
+        console.log('queryToDB '+ queryToDB);
+
+        let logsByFilter = result[0];
+        let allLogsForThisUser = collectAllLogs(logsByFilter);
+        console.log('allLogsForThisUser '+ allLogsForThisUser.length);
+
+        let allMessages = result[1];
+        let messagesWillShow = result[2];
 
 
         let generateMassage = true;
-
         let countOfIteratedMessages = initIteratedArr(allMessages);
 
 
@@ -549,8 +560,6 @@ function getRandomAdvertise(req) {
             }
 
         }
-
-
 
 
     });

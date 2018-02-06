@@ -52,7 +52,7 @@ module.exports = {
              res.send(resp.message);
              console.log(' time for request ' );
              console.log( new Date() - now);
-             console.log( resp.message);
+             // console.log( resp.message);
              logService.addLog(userID,resp._id, browser, IP, country, date)
          })
 
