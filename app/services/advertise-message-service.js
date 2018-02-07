@@ -8,9 +8,6 @@ const ObjectId = require('mongodb').ObjectID;
 
 
 
-// addNoMessageToShow: addNoMessageToShow,
-// getNoMessageToShow: getNoMessageToShow
-
 
 
 module.exports = {
@@ -650,116 +647,6 @@ function getRandomAdvertise(req) {
 
     });
 
-
-
-
-
-
-
-
-
-    // return Promise.all([
-    //     db.willShowMessages.find({
-    //         $and: [
-    //             {date: {$gt: new Date()}},
-    //             {useId: req.params.userId}
-    //         ]
-    //     }),
-    //     db.advertisingMessage.find({})
-    //
-    // ]).then(result => {
-    //
-    //         let messagesWillShow = result[0];
-    //         let allMessages = result[1];
-    //
-    //
-    //         if (messagesWillShow.length === 0) {
-    //             console.log(' messagesWillShow.length === 0');
-    //
-    //             return Promise.all([
-    //                 db.advertisingMessage.find({}),
-    //                 logService.getLogsWithField({})
-    //             ])
-    //         }
-    //
-    //
-    //
-    //         if (messagesWillShow.length >= allMessages.length) {
-    //             console.log(' messagesWillShow.length >= allMessages.length');
-    //             return Promise.all([
-    //                 warningMessageService.getNoMessageToShow()
-    //             ])
-    //         }
-    //
-    //
-    //         let messagesToShow =  subtractArrSecondFromFirst(allMessages, messagesWillShow);
-    //         let messagesId = getIdArrayOfMessages(messagesToShow);
-    //
-    //
-    //         console.log('third way ');
-    //         console.log('messagesId ');
-    //         console.log(messagesId);
-    //
-    //     // db.advertisingMessage.find({ _id:{ $in:  messagesId }}),
-    //         return Promise.all([
-    //             messagesToShow,
-    //             db.log.find({MessageID:{ $in:  messagesId } }),
-    //         ])
-    //     }
-    // ).then(
-    //         result =>{
-    //
-    //             let allMessages = result[0];
-    //             let allLogsForThisUser = result[1];
-    //             // let allMessagesFromObject  = result[2];
-    //
-    //
-    //
-    //             if(allMessages[0].message === 'no message to show' ){
-    //                 return allMessages[0]
-    //             }
-    //
-    //             // console.log('allMessagesFromObject  '+ allMessagesFromObject);
-    //
-    //             // console.log('allMessages length '+ allMessages.length);
-    //             // console.log('allMessages '+ getIdArrayOfAnything(allMessages, "_id"));
-    //             //
-    //             // console.log('allLogsForThisUser length '+ allLogsForThisUser.length);
-    //             // console.log('allLogsForThisUser '+ getIdArrayOfAnything(allLogsForThisUser, "MessageID"));
-    //
-    //
-    //
-    //             let generateMassage = true;
-    //             let newAdvertise;
-    //
-    //             while (generateMassage){
-    //
-    //                 newAdvertise = generateRandomMessage(allMessages);
-    //
-    //
-    //                 let logsAboutThisMessage = allLogsForThisUser.filter(
-    //                     log => String(log.MessageID) === String(newAdvertise._id)
-    //                 );
-    //
-    //
-    //                 if(logsAboutThisMessage.length === 0){
-    //                     return newAdvertise
-    //                 }
-    //
-    //                 let stopGenerator = twoTimesPerTenMinutesFilter(logsAboutThisMessage);
-    //
-    //
-    //                 if(stopGenerator){
-    //                     return newAdvertise
-    //                 }
-    //
-    //
-    //             }
-    //
-    //         }
-    //
-    // )
-    //
 
 
 }
