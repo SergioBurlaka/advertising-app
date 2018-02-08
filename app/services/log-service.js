@@ -6,7 +6,6 @@ module.exports = {
     addLog: addLog,
     deleteAllLogs: deleteAllLogs,
     getAllLogs: getAllLogs,
-    getLogsWithField: getLogsWithField,
     deleteAllLogsWithMessageId: deleteAllLogsWithMessageId,
     getLogsWithMessageId: getLogsWithMessageId
 };

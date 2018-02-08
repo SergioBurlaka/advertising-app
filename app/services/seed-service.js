@@ -158,29 +158,29 @@ let template = [
 //
 // ];
 
-//
-// let advertise = [
-//
-//     {
-//         message: "1 advertising message filters: [showNTimesAtPeriod ]",
-//         filters: [showNTimesAtPeriod ]
-//     },
-//     {
-//         message: "2 advertising message filters: [  showNTimesAtPeriod]",
-//         filters: [ showNTimesAtPeriod ]
-//     },
-//
-//     {
-//         message: "3 advertising message filters: [ showNTimesAtPeriod ]",
-//         filters: [  showNTimesAtPeriod ]
-//     },
-//
-//     {
-//         message: "4 advertising message filters: [ showNTimesAtPeriod]",
-//         filters: [ showNTimesAtPeriod]
-//     }
-// ];
-//
+
+let advertise = [
+
+    {
+        message: "1 advertising message filters: [showNTimesAtPeriod ]",
+        filters: [showNTimesAtPeriod ]
+    },
+    {
+        message: "2 advertising message filters: [  showNTimesAtPeriod]",
+        filters: [ showNTimesAtPeriod ]
+    },
+
+    {
+        message: "3 advertising message filters: [ showNTimesAtPeriod ]",
+        filters: [  showNTimesAtPeriod ]
+    },
+
+    {
+        message: "4 advertising message filters: [ showNTimesAtPeriod]",
+        filters: [ showNTimesAtPeriod]
+    }
+];
+
 
 
 
@@ -202,7 +202,7 @@ function generateNMessages(arrOfTemplate, numberOfMessages) {
     return arrOfMessages
 }
 
-let advertise = generateNMessages(template, 10);
+// let advertise = generateNMessages(template, 10);
 
 
 
