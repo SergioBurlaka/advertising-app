@@ -78,8 +78,8 @@ let showByCountry =  {
 let showAtPeriod = {
     filterName: 'showAtPeriod',
     settings: {
-        startTime: '2018-02-05T09:15:31.822Z',
-        endTime: '2018-02-07T09:15:31.822Z'
+        startTime: '2018-02-06T09:15:31.822Z',
+        endTime: '2018-02-10T09:15:31.822Z'
     }
 };
 
@@ -102,19 +102,19 @@ let template = [
     {
         message: "2 advertising message filters: " +
         "[oneTimeAtFiveMinutes, showByCountry,showAtPeriod]",
-        filters: [twoTimeAtSixMinutes, showByCountry,showAtPeriod]
+        filters: [twoTimeAtSixMinutes,showAtPeriod]
     },
 
     {
         message: "3 advertising message filters: " +
         "[threeTimeAtSevenMinutes, showByCountry,showAtPeriod]",
-        filters: [threeTimeAtSevenMinutes, showByCountry,showAtPeriod]
+        filters: [threeTimeAtSevenMinutes,showAtPeriod]
     },
 
     {
         message: "4 advertising message filters: " +
         "[fourTimeAtEightMinutes, showByCountry,showAtPeriod]",
-        filters: [fourTimeAtEightMinutes, showByCountry,showAtPeriod]
+        filters: [fourTimeAtEightMinutes,showAtPeriod]
     },
     {
         message: "5 advertising message filters: " +
@@ -163,24 +163,25 @@ let advertise = [
 
     {
         message: "1 advertising message filters: [showNTimesAtPeriod ]",
-        filters: [showNTimesAtPeriod ]
+        filters: [showByCountry, showAtPeriod, showNTimesAtPeriod ]
     },
     {
         message: "2 advertising message filters: [  showNTimesAtPeriod]",
-        filters: [ showNTimesAtPeriod ]
+        filters: [ showByCountry, showAtPeriod, showNTimesAtPeriod ]
     },
 
     {
         message: "3 advertising message filters: [ showNTimesAtPeriod ]",
-        filters: [  showNTimesAtPeriod ]
+        filters: [  showByCountry, showAtPeriod, showNTimesAtPeriod ]
     },
 
     {
         message: "4 advertising message filters: [ showNTimesAtPeriod]",
-        filters: [ showNTimesAtPeriod]
+        filters: [ showByCountry, showAtPeriod]
     }
 ];
 
+// showNTimesAtPeriod
 
 
 

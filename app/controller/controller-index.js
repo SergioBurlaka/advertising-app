@@ -109,7 +109,6 @@ function deleteWillShowMessage(req, res) {
         .then(() => {
             res.send('WillShowMessage was deleted');
         });
-
 }
 
 

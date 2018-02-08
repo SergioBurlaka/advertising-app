@@ -53,14 +53,16 @@ function getWillShowMessage() {
 
 function initIteratedArr(arrOfAdvertise) {
     let advertiseThatWasIterated = [];
-    for (let i = 0; i < arrOfAdvertise.length; i++) {
-        advertiseThatWasIterated.push(
-            {
-                advertiseId: arrOfAdvertise[i]._id,
-                count: 0
-            }
-        )
-    }
+
+
+    arrOfAdvertise.forEach((item, i) => {
+        advertiseThatWasIterated.push({
+            advertiseId: arrOfAdvertise[i]._id,
+            count: 0
+        })
+
+    });
+
     return advertiseThatWasIterated
 }
 
@@ -76,12 +78,8 @@ function increaseCountForIteratedMessage(countOfIteratedMessages, currentMessage
 
 
 function wereTheMessagesAllShown(countOfIteratedMessages) {
-    for (let i = 0; i < countOfIteratedMessages.length; i++) {
-        if (countOfIteratedMessages[i].count <= 0) {
-            return false
-        }
-    }
-    return true
+    return countOfIteratedMessages.every(item => item.count > 0);
+
 }
 
 
@@ -89,12 +87,12 @@ function wereTheMessagesAllShown(countOfIteratedMessages) {
 
 const filByCountry = {
     name: 'showByCountry',
-    filterMethod: function (currentAdvertise, req, messagesWillShow) {
+    filterMethod: function (currentAdvertise, req, messagesWillShow,filterIndex) {
 
         let countryOfUser = req.country;
-        let countryOfFilter = currentAdvertise.filters.settings.country;
+        let countryOfFilter = currentAdvertise.filters[filterIndex].settings.country;
 
-        return !(countryOfFilter === countryOfUser)
+        return countryOfFilter === countryOfUser
 
 
     }
@@ -117,77 +115,72 @@ const filShowNTimesAtPeriod = {
 
 const filShowAtPeriod = {
     name: 'showAtPeriod',
-    filterMethod: function (currentAdvertise, req, messagesWillShow) {
+    filterMethod: function (currentAdvertise, req, messagesWillShow, filterIndex) {
+
 
         let localTime = req.localTime;
-        let startTime = currentAdvertise.filters.settings.startTime;
-        let endTime = currentAdvertise.filters.settings.endTime;
+        let startTime = currentAdvertise.filters[filterIndex].settings.startTime;
+        let endTime = currentAdvertise.filters[filterIndex].settings.endTime;
 
         let beginOfInterval = new Date(Date.parse(startTime + ''));
         let endOfInterval = new Date(Date.parse(endTime + ''));
         let userTime = new Date(Date.parse(localTime + ''));
 
-        return !((beginOfInterval < userTime) && (userTime < endOfInterval))
+
+        return (beginOfInterval < userTime) && (userTime < endOfInterval)
 
     }
 };
 
 
-
-
-
-function iterateFilters(currentAdvertise, messagesWillShow, allMessages, req) {
+function iterateFilters(currentAdvertise, messagesWillShow, req) {
 
     let filters = [filByCountry, filShowNTimesAtPeriod, filShowAtPeriod];
 
-    const executorOfFilter = (strategy, currentAdvertise, req, messagesWillShow, ...args ) =>{
-        return strategy( currentAdvertise, req, messagesWillShow, ...args)
+    const executorOfFilter = (strategy, currentAdvertise, req, messagesWillShow, ...args) => {
+        return strategy(currentAdvertise, req, messagesWillShow, ...args)
     };
-
 
 
     for (let i = 0; i < currentAdvertise.filters.length; i++) {
 
         let currentFilter = currentAdvertise.filters[i];
 
-        for (let j = 0; j < filters.length; j++) {
+        for (let filterIndex = 0; filterIndex < filters.length; filterIndex++) {
 
-            if(currentFilter.filterName === filters[j].name ){
+            if (currentFilter.filterName === filters[filterIndex].name) {
 
 
                 let isAdvertiseFitToFilter = executorOfFilter(
-                    filters[j].filterMethod,
+                    filters[filterIndex].filterMethod,
                     currentAdvertise,
                     req,
-                    messagesWillShow
+                    messagesWillShow,
+                    i
                 );
 
-
-                if(!isAdvertiseFitToFilter){
+                if (!isAdvertiseFitToFilter) {
                     return false
                 }
 
-
             }
-
         }
-
     }
 
     return true
-
 }
-
 
 
 function createWillShowMessage(newAdvertise, req) {
 
     let filtersOfMessage = newAdvertise.filters;
-    let isShowNTimesAtPeriod = filtersOfMessage.some(item => item.filterName === 'showNTimesAtPeriod');
+    let isShowNTimesAtPeriod = filtersOfMessage
+        .some(item => item.filterName === 'showNTimesAtPeriod');
 
     if (isShowNTimesAtPeriod) {
 
-        let filter = filtersOfMessage.filter(item => item.filterName === 'showNTimesAtPeriod');
+        let filter = filtersOfMessage
+            .filter(item => item.filterName === 'showNTimesAtPeriod');
 
 
         let userId = req.params.userId;
@@ -206,19 +199,16 @@ function createWillShowMessage(newAdvertise, req) {
                 let futureDate = new Date(Date.parse(new Date()) + period * 60 * 1000);
 
                 addWillShowMessage(newAdvertise, futureDate, userId)
-                  //  .then(() => newAdvertise);
+
             }
 
-
         });
-
 
     }
 }
 
 
 function getRandomAdvertise(req) {
-
 
     return Promise.all([
         db.advertisingMessage
@@ -237,23 +227,19 @@ function getRandomAdvertise(req) {
         let allMessages = result[0];
         let messagesWillShow = result[1];
 
-
         let generateMassage = true;
         let countOfIteratedMessages = initIteratedArr(allMessages);
-
 
         while (generateMassage) {
 
 
             let newAdvertise = generateRandomMessage(allMessages);
-            let returnCurrentAdvertise = iterateFilters(newAdvertise, messagesWillShow, allMessages, req);
+            let returnCurrentAdvertise = iterateFilters(newAdvertise, messagesWillShow, req);
 
 
             if (returnCurrentAdvertise) {
-
                 createWillShowMessage(newAdvertise, req);
                 return newAdvertise
-
             }
 
 
@@ -266,13 +252,9 @@ function getRandomAdvertise(req) {
                     .find({"_id": ObjectId("5a6afb9161cb6c1f103e7918")})
                     .then(result => {
                         return result[0]
-
                     })
             }
-
         }
-
-
     });
 
 
