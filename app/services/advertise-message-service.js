@@ -28,7 +28,6 @@ function generateRandomMessage(arr) {
 
 function addWillShowMessage(MessageID, date, userID) {
 
-
     let newWillShowMessage = new db.willShowMessages({
         MesId: MessageID,
         date: date,
@@ -86,26 +85,6 @@ function wereTheMessagesAllShown(countOfIteratedMessages) {
 }
 
 
-function filterByCountry(countryOfFilter, countryOfUser) {
-    return countryOfFilter === countryOfUser
-}
-
-
-function filterWorkOnPeriodOfTime(startTime, endTime, timeOfUser) {
-
-    let beginOfInterval = new Date(Date.parse(startTime + ''));
-    let endOfInterval = new Date(Date.parse(endTime + ''));
-    let userTime = new Date(Date.parse(timeOfUser + ''));
-
-    return (beginOfInterval < userTime) && (userTime < endOfInterval);
-
-}
-
-
-function filterShowNTimesAtPeriod(messagesWillShow, currentMessageId) {
-    return messagesWillShow.some(item => item.MesId + '' === currentMessageId + '');
-
-}
 
 
 const filByCountry = {
@@ -156,9 +135,6 @@ const filShowAtPeriod = {
 
 
 
-// console.log(filByCountry.filterByCountry());
-
-
 
 function iterateFilters(currentAdvertise, messagesWillShow, allMessages, req) {
 
@@ -201,73 +177,6 @@ function iterateFilters(currentAdvertise, messagesWillShow, allMessages, req) {
     return true
 
 }
-
-//
-// function iterateFilters(currentAdvertise, messagesWillShow, allMessages, req) {
-//
-//
-//
-//     let countryOfUser = req.country;
-//     let localTime = req.localTime;
-//
-//     for (let i = 0; i < currentAdvertise.filters.length; i++) {
-//
-//
-//
-//         switch (currentAdvertise.filters[i].filterName) {
-//
-//             case 'showByCountry':
-//
-//                 let countryOfFilter = currentAdvertise.filters[i].settings.country;
-//                 let filterByCountryValue = filterByCountry(countryOfFilter, countryOfUser);
-//
-//                 if (filterByCountryValue) {
-//                     break
-//                 }
-//
-//                 return false;
-//
-//             case 'showAtPeriod':
-//
-//                 let startTime = currentAdvertise.filters[i].settings.startTime;
-//                 let endTime = currentAdvertise.filters[i].settings.endTime;
-//
-//                 let filterByTimeInterval = filterWorkOnPeriodOfTime(startTime, endTime, localTime);
-//
-//
-//                 if (filterByTimeInterval) {
-//                     break
-//                 }
-//
-//                 return false;
-//
-//             case 'showNTimesAtPeriod':
-//
-//                 let currentMessageId = currentAdvertise._id;
-//
-//
-//                 // if (messagesWillShow.length >= allMessages.length) {
-//                 //     return false;
-//                 // }
-//
-//                 let isMessageInWillShowCollection = filterShowNTimesAtPeriod(messagesWillShow, currentMessageId);
-//
-//                 if (isMessageInWillShowCollection) {
-//                     return false;
-//
-//                 }
-//
-//                 break;
-//
-//             case 'noFilter':
-//                 return false;
-//
-//         }
-//     }
-//
-//     return true
-// }
-//
 
 
 
