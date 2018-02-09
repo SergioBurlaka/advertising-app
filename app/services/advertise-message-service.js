@@ -3,13 +3,11 @@ const ObjectId = require('mongodb').ObjectID;
 
 
 module.exports = {
-
     getAllAdvertise: getAllAdvertise,
     getRandomAdvertise: getRandomAdvertise,
     deleteMessageById: deleteMessageById,
     getWillShowMessage: getWillShowMessage,
     deleteWillShowMessage: deleteWillShowMessage
-
 };
 
 
@@ -35,100 +33,74 @@ function addWillShowMessage(MessageID, date, userID) {
     });
 
     newWillShowMessage.save();
-
 }
 
 
 function deleteWillShowMessage() {
     return db.willShowMessages.remove({})
-
 }
 
 
 function getWillShowMessage() {
     return db.willShowMessages.find({})
-
 }
 
 
 function initIteratedArr(arrOfAdvertise) {
-    let advertiseThatWasIterated = [];
 
-
-    arrOfAdvertise.forEach((item, i) => {
-        advertiseThatWasIterated.push({
-            advertiseId: arrOfAdvertise[i]._id,
+    return arrOfAdvertise.map(item => ({
+            advertiseId: item._id,
             count: 0
-        })
-
-    });
-
-    return advertiseThatWasIterated
+    }));
 }
 
 
 function increaseCountForIteratedMessage(countOfIteratedMessages, currentMessage) {
-    for (let i = 0; i < countOfIteratedMessages.length; i++) {
-        if (countOfIteratedMessages[i].advertiseId + '' === currentMessage._id + '') {
-            countOfIteratedMessages[i].count++
-        }
-    }
 
+   let item = countOfIteratedMessages.find(item =>
+       currentMessage._id.equals(item.advertiseId))
+   item.count++;
 }
 
 
 function wereTheMessagesAllShown(countOfIteratedMessages) {
     return countOfIteratedMessages.every(item => item.count > 0);
-
 }
-
-
 
 
 const filByCountry = {
     name: 'showByCountry',
-    filterMethod: function (currentAdvertise, req, messagesWillShow,filterIndex) {
+    filterMethod(currentAdvertise, req, messagesWillShow, filterSettings) {
 
         let countryOfUser = req.country;
-        let countryOfFilter = currentAdvertise.filters[filterIndex].settings.country;
+        let countryOfFilter = filterSettings.country;
 
         return countryOfFilter === countryOfUser
-
-
     }
-
 };
+
 
 const filShowNTimesAtPeriod = {
     name: 'showNTimesAtPeriod',
-    filterMethod: function (currentAdvertise, req, messagesWillShow) {
+    filterMethod(currentAdvertise, req, messagesWillShow) {
 
-        let currentMessageId = currentAdvertise._id;
-        let isMessageInWillShowCollection =  messagesWillShow
-            .some(item => item.MesId + '' === currentMessageId + '');
+        let isMessageInWillShowCollection = messagesWillShow
+            .some(item => item.MesId.toString() === currentAdvertise._id.toString());
 
         return !isMessageInWillShowCollection
-
     }
-
 };
+
 
 const filShowAtPeriod = {
     name: 'showAtPeriod',
-    filterMethod: function (currentAdvertise, req, messagesWillShow, filterIndex) {
+    filterMethod(currentAdvertise, req, messagesWillShow, filterSettings) {
 
+        let beginOfInterval = new Date(filterSettings.startTime);
+        let endOfInterval = new Date(filterSettings.endTime);
+        let userTime = new Date(req.localTime);
 
-        let localTime = req.localTime;
-        let startTime = currentAdvertise.filters[filterIndex].settings.startTime;
-        let endTime = currentAdvertise.filters[filterIndex].settings.endTime;
-
-        let beginOfInterval = new Date(Date.parse(startTime + ''));
-        let endOfInterval = new Date(Date.parse(endTime + ''));
-        let userTime = new Date(Date.parse(localTime + ''));
-
-
-        return (beginOfInterval < userTime) && (userTime < endOfInterval)
-
+        return beginOfInterval < userTime && userTime < endOfInterval
     }
 };
 
@@ -145,65 +117,56 @@ function iterateFilters(currentAdvertise, messagesWillShow, req) {
     for (let i = 0; i < currentAdvertise.filters.length; i++) {
 
         let currentFilter = currentAdvertise.filters[i];
-
-        for (let filterIndex = 0; filterIndex < filters.length; filterIndex++) {
-
-            if (currentFilter.filterName === filters[filterIndex].name) {
+        let filterFromCollection = filters.find(item => item.name === currentFilter.filterName);
 
 
-                let isAdvertiseFitToFilter = executorOfFilter(
-                    filters[filterIndex].filterMethod,
-                    currentAdvertise,
-                    req,
-                    messagesWillShow,
-                    i
-                );
+        if (filterFromCollection) {
 
-                if (!isAdvertiseFitToFilter) {
-                    return false
-                }
+            let isAdvertiseFitToFilter = executorOfFilter(
+                filterFromCollection.filterMethod,
+                currentAdvertise,
+                req,
+                messagesWillShow,
+                currentFilter.settings
+            );
 
+            if (!isAdvertiseFitToFilter) {
+                return false
             }
         }
     }
-
     return true
 }
 
 
 function createWillShowMessage(newAdvertise, req) {
 
+    let ONEMINUTE = 60 * 1000;
+
     let filtersOfMessage = newAdvertise.filters;
-    let isShowNTimesAtPeriod = filtersOfMessage
-        .some(item => item.filterName === 'showNTimesAtPeriod');
+    let showNTimesAtPeriodFilter = filtersOfMessage
+        .find(item => item.filterName === 'showNTimesAtPeriod');
 
-    if (isShowNTimesAtPeriod) {
 
-        let filter = filtersOfMessage
-            .filter(item => item.filterName === 'showNTimesAtPeriod');
-
+    if (showNTimesAtPeriodFilter) {
 
         let userId = req.params.userId;
-        let showTimes = filter[0].settings.showTimes;
-        let period = filter[0].settings.period;
-
+        let showTimes = showNTimesAtPeriodFilter.settings.showTimes;
+        let period = showNTimesAtPeriodFilter.settings.period;
 
         db.log.find({
             MessageID: newAdvertise._id,
-            date: {$gte: new Date(new Date() - period * 60 * 1000)}
+            date: {$gte: new Date(new Date() - period * ONEMINUTE)}
         }).then(result => {
-
 
             if (result.length === showTimes - 1) {
 
-                let futureDate = new Date(Date.parse(new Date()) + period * 60 * 1000);
+                let futureDate = new Date((new Date()).getTime() + period * ONEMINUTE);
 
                 addWillShowMessage(newAdvertise, futureDate, userId)
 
             }
-
         });
-
     }
 }
 
@@ -212,7 +175,7 @@ function getRandomAdvertise(req) {
 
     return Promise.all([
         db.advertisingMessage
-            .find({}),
+            .find(),
         db.willShowMessages
             .find({
                 $and: [
@@ -221,54 +184,41 @@ function getRandomAdvertise(req) {
                 ]
             })
 
-    ]).then(result => {
+    ]).then(([allMessages, messagesWillShow]) => {
 
 
-        let allMessages = result[0];
-        let messagesWillShow = result[1];
-
-        let generateMassage = true;
+        let wasAllMessagesShown = false;
         let countOfIteratedMessages = initIteratedArr(allMessages);
 
-        while (generateMassage) {
-
+        while (!wasAllMessagesShown) {
 
             let newAdvertise = generateRandomMessage(allMessages);
             let returnCurrentAdvertise = iterateFilters(newAdvertise, messagesWillShow, req);
-
 
             if (returnCurrentAdvertise) {
                 createWillShowMessage(newAdvertise, req);
                 return newAdvertise
             }
 
-
             increaseCountForIteratedMessage(countOfIteratedMessages, newAdvertise);
-            let wasAllMessagesShown = wereTheMessagesAllShown(countOfIteratedMessages);
-
-
-            if (wasAllMessagesShown) {
-                return db.noMessageWarning
-                    .find({"_id": ObjectId("5a6afb9161cb6c1f103e7918")})
-                    .then(result => {
-                        return result[0]
-                    })
-            }
+            wasAllMessagesShown = wereTheMessagesAllShown(countOfIteratedMessages);
         }
+
+        return db.noMessageWarning
+            .find({"_id": ObjectId("5a6afb9161cb6c1f103e7918")})
+            .then(result => {
+                return result[0]
+            })
     });
-
-
 }
 
 
 function getAllAdvertise() {
     return db.advertisingMessage.find({})
-
 }
 
 
 function deleteMessageById(messageId) {
     return db.advertisingMessage.findByIdAndRemove({_id: messageId})
-
 }
 

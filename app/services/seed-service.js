@@ -102,19 +102,19 @@ let template = [
     {
         message: "2 advertising message filters: " +
         "[oneTimeAtFiveMinutes, showByCountry,showAtPeriod]",
-        filters: [twoTimeAtSixMinutes,showAtPeriod]
+        filters: [twoTimeAtSixMinutes,showByCountry,showAtPeriod]
     },
 
     {
         message: "3 advertising message filters: " +
         "[threeTimeAtSevenMinutes, showByCountry,showAtPeriod]",
-        filters: [threeTimeAtSevenMinutes,showAtPeriod]
+        filters: [threeTimeAtSevenMinutes, showAtPeriod]
     },
 
     {
         message: "4 advertising message filters: " +
         "[fourTimeAtEightMinutes, showByCountry,showAtPeriod]",
-        filters: [fourTimeAtEightMinutes,showAtPeriod]
+        filters: [fourTimeAtEightMinutes,showByCountry]
     },
     {
         message: "5 advertising message filters: " +
@@ -163,21 +163,21 @@ let advertise = [
 
     {
         message: "1 advertising message filters: [showNTimesAtPeriod ]",
-        filters: [showByCountry, showAtPeriod, showNTimesAtPeriod ]
+        filters: [showNTimesAtPeriod, showByCountry ]
     },
     {
         message: "2 advertising message filters: [  showNTimesAtPeriod]",
-        filters: [ showByCountry, showAtPeriod, showNTimesAtPeriod ]
+        filters: [ showNTimesAtPeriod, showByCountry ]
     },
 
     {
         message: "3 advertising message filters: [ showNTimesAtPeriod ]",
-        filters: [  showByCountry, showAtPeriod, showNTimesAtPeriod ]
+        filters: [ showNTimesAtPeriod, showByCountry ]
     },
 
     {
         message: "4 advertising message filters: [ showNTimesAtPeriod]",
-        filters: [ showByCountry, showAtPeriod]
+        filters: [ showNTimesAtPeriod]
     }
 ];
 
